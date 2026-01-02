@@ -1,0 +1,70 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+#import seaborn as sb
+
+
+#load the balance sheet data file
+fin_balsheet_data = pd.read_excel('/content/Balance Sheet (End-of-Quarter Snapshot).xlsx', index_col ='Account')
+
+#transpose account as row
+fin_balsheet_data.T
+
+
+
+#----Data Exploration and cleaning
+
+#information of the data
+fin_balsheet_data.info()
+
+#check missing balance of the data
+missing_data = fin_balsheet_data.isna().sum()
+print(f'Missing Data = \n {missing_data}')
+
+#remove missing values
+fin_balsheet_data = fin_balsheet_data.dropna()
+
+#check for duplicate values
+total_duplicate_data = fin_balsheet_data.duplicated().sum()
+print(f'Total duplicated data = {total_duplicate_data}')
+
+#data statistic summery
+
+summary_balsheet_data = fin_balsheet_data.describe()
+print(summary_balsheet_data.head())
+
+
+#----Analysis -----
+#calculate the working capital
+
+'''warning: if it the working capital is positive that means the company has good capital safety or standing for the quarter
+but negative means; the company might run out of money'''
+
+# Calculate working capital as a new row in the DataFrame
+fin_balsheet_data.loc['Working Capital'] = fin_balsheet_data.loc['Total Current Assets'] - fin_balsheet_data.loc['Total Current Liabilities']
+
+#calculate the debt to equity ratio
+"""warning: if the ratio is high, the company is heavily relying on debt(risky)
+but if the raio is low, the company is more relying on equity (safer)"""
+
+fin_balsheet_data.loc['Total Liabilities'] = fin_balsheet_data.loc['Total Current Liabilities'] + fin_balsheet_data.loc['Long-Term Debt']
+fin_balsheet_data.loc['Equity'] = fin_balsheet_data.loc['Total Assets'] - fin_balsheet_data.loc['Total Liabilities']
+fin_balsheet_data.loc['Debt to Equity'] = (fin_balsheet_data.loc['Short-Term Debt'] + fin_balsheet_data.loc['Long-Term Debt']) / fin_balsheet_data.loc['Equity']
+
+
+
+#---  visual of the analysis result---
+
+#Total assets over time
+
+plt.plot(fin_balsheet_data.columns, fin_balsheet_data.loc['Total Assets'], marker='o')
+plt.title('Total Assets Over Time')
+plt.xlabel('Quarter')
+plt.ylabel('Amount ($)')
+plt.grid(True)
+plt.show()
+
+
+
+#view of the data
+fin_balsheet_data.head(50)
